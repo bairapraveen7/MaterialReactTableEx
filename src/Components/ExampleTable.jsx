@@ -1,52 +1,53 @@
-import React, { useMemo, useState } from 'react'
-import { MaterialReactTable,useMaterialReactTable } from 'material-react-table'
+import { useMemo } from 'react';
+import {
+  MaterialReactTable,
+  useMaterialReactTable,
+} from 'material-react-table';
 
+//nested data is ok, see accessorKeys in ColumnDef below
+const data = [
 
-function ExampleTable() {
-  const data = useState([
-    // {
-    //   id: 1,
-    //   name: 'hello',
-    //   type: 'Textfield',
-    //   values: [],
-    //   validations: ["R","E","F"],
-    //   order: 1
-    // }
-  ]);
-  const columns = useMemo(() => [
+];
+
+const Example = () => {
+  //should be memoized or stable
+  const columns = useMemo(
+    () => [
       {
-        accessorKey: 'id',
-        Header: 'id'
+        accessorKey: 'name.firstName', //access nested data with dot notation
+        header: 'First Name',
+        size: 150,
       },
       {
-        accessorKey: 'name',
-        Header: 'Name of Field'
+        accessorKey: 'name.lastName',
+        header: 'Last Name',
+        size: 150,
       },
       {
-        accessorKey: 'type',
-        Header: 'Type of Field'
+        accessorKey: 'address', //normal accessorKey
+        header: 'Address',
+        size: 200,
       },
       {
-        accessorKey: 'values',
-        Header: 'Dropdown Values'
+        accessorKey: 'city',
+        header: 'City',
+        size: 150,
       },
       {
-        accessorKey: 'validations',
-        Header: 'Validations'
+        accessorKey: 'state',
+        header: 'State',
+        size: 150,
       },
-      {
-        accessorKey: 'order',
-        Header: 'order'
-      },
-  ], [])
+    ],
+    [],
+  );
 
   const table = useMaterialReactTable({
-     columns,
-     data
-  })
-  return (
-     <MaterialReactTable table={table} />
-  )
-}
+    columns,
+    data, //data must be memoized or stable (useState, useMemo, defined outside of this component, etc.)
+  });
 
-export default ExampleTable
+  return <MaterialReactTable table={table} />;
+};
+
+export default Example;
