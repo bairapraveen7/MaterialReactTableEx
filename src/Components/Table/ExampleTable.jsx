@@ -6,6 +6,8 @@ import {
   FormControlLabel,
   FormGroup,
   FormHelperText,
+  IconButton,
+  Tooltip,
 } from "@mui/material";
 import {
   MaterialReactTable,
@@ -24,13 +26,21 @@ import {
 import { TagsInput } from "react-tag-input-component";
 import { DisplayContext, TableContext } from "../../Hooks/Contexts";
 import { v4 as uuidv4 } from "uuid";
+import { Delete, Edit } from "@mui/icons-material";
 const typeOfFieldOptions = [TEXTFIELD, DROPDOWN];
 
 export const ExampleTable = ({ data, setData }) => {
   const { setDisplayTable } = useContext(DisplayContext);
   const { setTable } = useContext(TableContext);
-  const [value, setValue] = useState([]);
-  const [validation, setValidation] = useState({
+  const [createValue, setCreateValue] = useState([]);
+  const [createValidation, setCreateValidation] = useState({
+    [EMAIL]: false,
+    [REQUIRED]: false,
+    [NUMERIC]: false,
+    [ALPHANUMERIC]: false,
+  });
+  const [editValue, setEditValue] = useState([]);
+  const [editValidation, setEditValidation] = useState({
     [EMAIL]: false,
     [REQUIRED]: false,
     [NUMERIC]: false,
@@ -38,7 +48,7 @@ export const ExampleTable = ({ data, setData }) => {
   });
   const [validationErrors, setValidationErrors] = useState({});
 
-  const onCreatingRowCancel = () => (
+  const onClickingCancel = (setValue,setValidation) => (
     setValidationErrors({}),
     setValue([]),
     setValidation({
@@ -49,42 +59,30 @@ export const ExampleTable = ({ data, setData }) => {
     })
   );
 
-  const valuesEdit = (row) => (
+  const dropDownValuesComponent = (row,value,setValue) => {
+    if(row.id == 'row-mrt-edit'){
+      setValue(row.original.values);
+    }
+    return (
     <FormControl error={!!validationErrors.values}>
       <TagsInput
-        value={row.original.values}
-        onChange={(newTags) => {
-          const newData = data.map((item) => {
-            if (item.id == row.original.id) {
-              return {
-                ...item,
-                values: newTags,
-              };
-            }
-            return item;
-          });
-          setData(newData);
-        }}
-        placeHolder="Type and Enter"
-      />
-      <FormHelperText>{validationErrors.values}</FormHelperText>
-    </FormControl>
-  );
-
-  const valuesCreate = (row) => (
-    <FormControl sx={{width: '100%'}} error={!!validationErrors.values}>
-      <TagsInput
-        value={value}
+        value={row.original.values || value}
         onChange={setValue}
         placeHolder="Type and Enter"
-        style={{width: '100%'}}
       />
       <FormHelperText>{validationErrors.values}</FormHelperText>
     </FormControl>
-  );
+    )
+  };
 
-  const validationsEdit = (row) => (
-    <Box component="div" sx={{height:'2rem', overflowY: 'scroll'}}>
+  const validationComponent = (row,validation,setValidation) => {
+    if(row.id == 'row-mrt-edit'){
+      setValidation(prev => ({
+        ...prev,
+        ...row.original.validations
+      }))
+    }
+    return (
     <FormControl
       sx={{ m: 3 }}
       component="fieldset"
@@ -96,119 +94,10 @@ export const ExampleTable = ({ data, setData }) => {
           control={
             <Checkbox
               name="Required"
-              checked={row.original.validations.includes(REQUIRED)}
-              onChange={() => {
-                const newData = data.map((item) => {
-                  if (item.id == row.original.id) {
-                    if (item.validations.includes(REQUIRED)) {
-                      item.validations = item.validations.filter(
-                        (x) => x != REQUIRED
-                      );
-                    } else {
-                      item.validations.push(REQUIRED);
-                    }
-                  }
-                  return item;
-                });
-                setData(newData);
-              }}
-            />
-          }
-          label="Requried"
-        />
-        <FormControlLabel
-          control={
-            <Checkbox
-              name="Email"
-              checked={row.original.validations.includes(EMAIL)}
-              onChange={() => {
-                const newData = data.map((item) => {
-                  if (item.id == row.original.id) {
-                    if (item.validations.includes(EMAIL)) {
-                      item.validations = item.validations.filter(
-                        (x) => x != EMAIL
-                      );
-                    } else {
-                      item.validations.push(EMAIL);
-                    }
-                  }
-                  return item;
-                });
-                setData(newData);
-              }}
-            />
-          }
-          label="Email"
-        />
-        <FormControlLabel
-          control={
-            <Checkbox
-              name="AlphaNumeric"
-              checked={row.original.validations.includes(ALPHANUMERIC)}
-              onChange={() => {
-                const newData = data.map((item) => {
-                  if (item.id == row.original.id) {
-                    if (item.validations.includes(ALPHANUMERIC)) {
-                      item.validations = item.validations.filter(
-                        (x) => x != ALPHANUMERIC
-                      );
-                    } else {
-                      item.validations.push(ALPHANUMERIC);
-                    }
-                  }
-                  return item;
-                });
-                setData(newData);
-              }}
-            />
-          }
-          label="AlphaNumeric"
-        />
-        <FormControlLabel
-          control={
-            <Checkbox
-              name="Numeric"
-              checked={row.original.validations.includes(NUMERIC)}
-              onChange={() => {
-                const newData = data.map((item) => {
-                  if (item.id == row.original.id) {
-                    if (item.validations.includes(NUMERIC)) {
-                      item.validations = item.validations.filter(
-                        (x) => x != NUMERIC
-                      );
-                    } else {
-                      item.validations.push(NUMERIC);
-                    }
-                  }
-                  return item;
-                });
-                setData(newData);
-              }}
-            />
-          }
-          label="Only Numeric"
-        />
-      </FormGroup>
-      <FormHelperText>{validationErrors.validations}</FormHelperText>
-    </FormControl>
-    </Box>
-  );
-
-  const validationsCreate = () => (
-    <FormControl
-      sx={{ m: 3 }}
-      component="fieldset"
-      variant="standard"
-      error={!!validationErrors.validations}
-    >
-      <FormGroup>
-        <FormControlLabel
-          control={
-            <Checkbox
-              name="Required"
+              checked={validation[REQUIRED]}
               onChange={() => {
                 setValidation((prev) => ({
-                  ...validation,
+                  ...prev,
                   [REQUIRED]: !prev[REQUIRED],
                 }));
               }}
@@ -220,9 +109,10 @@ export const ExampleTable = ({ data, setData }) => {
           control={
             <Checkbox
               name="Email"
+              checked={validation[EMAIL]}
               onChange={() => {
                 setValidation((prev) => ({
-                  ...validation,
+                  ...prev,
                   [EMAIL]: !prev[EMAIL],
                 }));
               }}
@@ -234,9 +124,10 @@ export const ExampleTable = ({ data, setData }) => {
           control={
             <Checkbox
               name="AlphaNumeric"
+              checked={validation[ALPHANUMERIC]}
               onChange={() => {
                 setValidation((prev) => ({
-                  ...validation,
+                  ...prev,
                   [ALPHANUMERIC]: !prev[ALPHANUMERIC],
                 }));
               }}
@@ -248,9 +139,10 @@ export const ExampleTable = ({ data, setData }) => {
           control={
             <Checkbox
               name="Numeric"
+              checked={validation[NUMERIC]}
               onChange={() => {
                 setValidation((prev) => ({
-                  ...validation,
+                  ...prev,
                   [NUMERIC]: !prev[NUMERIC],
                 }));
               }}
@@ -261,18 +153,18 @@ export const ExampleTable = ({ data, setData }) => {
       </FormGroup>
       <FormHelperText>{validationErrors.validations}</FormHelperText>
     </FormControl>
-  );
+  )};
 
   const handleCreateField = ({ values, table }) => {
     const validationList = [];
-    for (const x in validation) {
-      if (validation[x]) {
+    for (const x in createValidation) {
+      if (createValidation[x]) {
         validationList.push(x);
       }
     }
     const user = {
       ...values,
-      values: value,
+      values: createValue,
       validations: validationList,
     };
     const newValidationErrors = validateUser(user);
@@ -281,14 +173,12 @@ export const ExampleTable = ({ data, setData }) => {
       return;
     }
     setValidationErrors({});
-    setValue([]);
+    setCreateValue([]);
     setData((prevData) => [
       ...prevData,
       {
-        ...values,
-        id: uuidv4(),
-        values: value,
-        validations: validationList,
+         ...user,
+         id: uuidv4(),
       },
     ]);
     table.setCreatingRow(null);
@@ -296,14 +186,18 @@ export const ExampleTable = ({ data, setData }) => {
 
   const handleUpdateField = ({ values, table }) => {
     console.log("the edit",values);
-    const item = data.filter((x) => x.id == values.id);
-    const newValues = {
-      ...item[0],
-      name: values.name || item[0].name,
-      type: values.type || item[0].name,
-      order: values.order || item[0].order
+    const validationList = [];
+    for (const x in editValidation) {
+      if (editValidation[x]) {
+        validationList.push(x);
+      }
+    }
+    const user = {
+      ...values,
+      values: editValue,
+      validations: validationList,
     };
-    const newValidationErrors = validateUser(newValues);
+    const newValidationErrors = validateUser(user);
     if (Object.values(newValidationErrors).some((error) => error)) {
       setValidationErrors(newValidationErrors);
       return;
@@ -311,7 +205,7 @@ export const ExampleTable = ({ data, setData }) => {
     setValidationErrors({});
     setData((prevData) =>
       prevData.map((eachData) => {
-        return eachData.id === values.id ? newValues : eachData;
+        return eachData.id === values.id ? user : eachData;
       })
     );
     table.setEditingRow(null);
@@ -370,7 +264,7 @@ export const ExampleTable = ({ data, setData }) => {
           }),
       },
       Edit: ({ row }) => (
-        <>{row.id == "mrt-row-create" ? valuesCreate(row) : valuesEdit(row)}</>
+        <>{row.id == "mrt-row-create" ?  dropDownValuesComponent(row,createValue,setCreateValue) : dropDownValuesComponent(row,editValue,setEditValue)}</>
       ),
       Cell: ({ cell, row }) => (
         <>
@@ -400,8 +294,7 @@ export const ExampleTable = ({ data, setData }) => {
         return (
           <>
             {row.id == "mrt-row-create"
-              ? validationsCreate(row)
-              : validationsEdit(row)}
+              ?  validationComponent(createValidation,setCreateValidation) : validationComponent(editValidation,setEditValidation)}
           </>
         );
       },
@@ -427,10 +320,24 @@ export const ExampleTable = ({ data, setData }) => {
     editDisplayMode: "row",
     enableEditing: true,
     getRowId: (row) => row.id,
-    onCreatingRowCancel: () => onCreatingRowCancel(),
+    onCreatingRowCancel: () => onClickingCancel(setCreateValue,setCreateValidation),
     onCreatingRowSave: handleCreateField,
-    onEditingRowCancel: () => setValidationErrors({}),
+    onEditingRowCancel: () => onClickingCancel(setEditValue,setEditValidation),
     onEditingRowSave: handleUpdateField,
+    renderRowActions: ({ row, table }) => (
+      <Box sx={{ display: 'flex', gap: '1rem' }}>
+        <Tooltip title="Edit">
+          <IconButton onClick={() => table.setEditingRow(row)}>
+            <Edit />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="Delete">
+          <IconButton color="error">
+            <Delete />
+          </IconButton>
+        </Tooltip>
+      </Box>
+    ),
     renderTopToolbarCustomActions: ({ table }) => (
       <Button
         variant="contained"
