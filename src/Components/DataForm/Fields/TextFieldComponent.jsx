@@ -30,6 +30,10 @@ export const TextFieldComponent = ({
               [fieldItem.id]: Validations[eachValidation].message
             })
             break;
+          }else  if(error){
+            setError({
+              [fieldItem.id]: undefined
+            })
           }
         };
       }}

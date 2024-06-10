@@ -1,10 +1,11 @@
 import logo from './logo.svg';
 import './App.css';
 import { Table } from '@mui/material';
-import {ExampleTable} from './Components/ExampleTable';
+import {ExampleTable} from './Components/Table/ExampleTable';
 import { DisplayContext,TableContext } from './Hooks/Contexts';
 import { Form } from './Components/Form/Form';
 import { useState } from 'react';
+import { ALPHANUMERIC, NUMERIC, TEXTFIELD } from './config';
 
 function App() {
   const [table,setTable] = useState();

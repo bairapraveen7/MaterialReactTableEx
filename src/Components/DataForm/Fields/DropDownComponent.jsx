@@ -25,11 +25,14 @@ export const DropDownComponent = ({
           for (const eachValidation of fieldItem.validations) {
             if (Validations[eachValidation].fn(e.target.value) == true) {
               setError((prev) => ({
-                ...prev,
                 [fieldItem.id]: Validations[eachValidation].message
               })
               )
               break;
+            }else  if(error){
+              setError((prev) => ({
+                [fieldItem.id]: undefined
+              }))
             }
           };
         }}
