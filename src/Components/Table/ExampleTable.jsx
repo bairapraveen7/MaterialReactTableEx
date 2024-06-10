@@ -295,10 +295,13 @@ export const ExampleTable = ({ data, setData }) => {
   };
 
   const handleUpdateField = ({ values, table }) => {
+    console.log("the edit",values);
     const item = data.filter((x) => x.id == values.id);
     const newValues = {
       ...item[0],
-      ...values,
+      name: values.name || item[0].name,
+      type: values.type || item[0].name,
+      order: values.order || item[0].order
     };
     const newValidationErrors = validateUser(newValues);
     if (Object.values(newValidationErrors).some((error) => error)) {
@@ -458,6 +461,7 @@ export const ExampleTable = ({ data, setData }) => {
 };
 
 const validateUser = (user) => {
+  console.log(user);
   const obj = {};
   if (user.name == "") {
     obj["name"] = "Name can' be defined";
