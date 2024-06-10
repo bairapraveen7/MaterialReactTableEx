@@ -1,4 +1,5 @@
 import {
+  Box,
   Button,
   Checkbox,
   FormControl,
@@ -26,6 +27,8 @@ import { v4 as uuidv4 } from "uuid";
 const typeOfFieldOptions = [TEXTFIELD, DROPDOWN];
 
 export const ExampleTable = ({ data, setData }) => {
+  const { setDisplayTable } = useContext(DisplayContext);
+  const { setTable } = useContext(TableContext);
   const [value, setValue] = useState([]);
   const [validation, setValidation] = useState({
     [EMAIL]: false,
@@ -34,8 +37,6 @@ export const ExampleTable = ({ data, setData }) => {
     [ALPHANUMERIC]: false,
   });
   const [validationErrors, setValidationErrors] = useState({});
-  const { setDisplayTable } = useContext(DisplayContext);
-  const { setTable } = useContext(TableContext);
 
   const onCreatingRowCancel = () => (
     setValidationErrors({}),
@@ -48,7 +49,7 @@ export const ExampleTable = ({ data, setData }) => {
     })
   );
 
-  const valuesEdit = (row, data, setData, validationErrors) => (
+  const valuesEdit = (row) => (
     <FormControl error={!!validationErrors.values}>
       <TagsInput
         value={row.original.values}
@@ -71,17 +72,19 @@ export const ExampleTable = ({ data, setData }) => {
   );
 
   const valuesCreate = (row) => (
-    <FormControl error={!!validationErrors.values}>
+    <FormControl sx={{width: '100%'}} error={!!validationErrors.values}>
       <TagsInput
         value={value}
         onChange={setValue}
         placeHolder="Type and Enter"
+        style={{width: '100%'}}
       />
       <FormHelperText>{validationErrors.values}</FormHelperText>
     </FormControl>
   );
 
   const validationsEdit = (row) => (
+    <Box component="div" sx={{height:'2rem', overflowY: 'scroll'}}>
     <FormControl
       sx={{ m: 3 }}
       component="fieldset"
@@ -188,6 +191,7 @@ export const ExampleTable = ({ data, setData }) => {
       </FormGroup>
       <FormHelperText>{validationErrors.validations}</FormHelperText>
     </FormControl>
+    </Box>
   );
 
   const validationsCreate = () => (
