@@ -8,6 +8,8 @@ import {
   FormGroup,
   FormHelperText,
   IconButton,
+  Menu,
+  MenuItem,
   Tooltip,
 } from "@mui/material";
 import {
@@ -48,14 +50,25 @@ export const ExampleTable = ({ data, setData }) => {
     [ALPHANUMERIC]: false,
   });
   const [validationErrors, setValidationErrors] = useState({});
-  const [open, setOpen] = useState(false);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const open = Boolean(anchorEl);
 
-  const handleClickOpen = () => {
-    setOpen(true);
+  const handleClick = (row,event,setValidation) => {
+    const obj = {};
+    for(const x of row.original.validations){
+
+    }
+    setAnchorEl(event.currentTarget);
+    setValidation({
+      [EMAIL]: row.original.validations.includes(EMAIL),
+      [REQUIRED]: row.original.validations.includes(REQUIRED),
+      [NUMERIC]: row.original.validations.includes(NUMERIC),
+      [ALPHANUMERIC]: row.original.validations.includes(ALPHANUMERIC),
+    })
   };
 
   const handleClose = () => {
-    setOpen(false);
+    setAnchorEl(null);
   };
 
   const onClickingCancel = (setValue,setValidation) => (
@@ -84,17 +97,33 @@ export const ExampleTable = ({ data, setData }) => {
 
   const validationComponent = (row,validation,setValidation) => {
     return (
-      <><Button variant="outlined" onClick={handleClickOpen}>click</Button>
-      <Dialog open={open}
-      onClose={handleClose}>
-        
+    <> 
+    <Button
+      id="basic-button"
+      aria-controls={open ? 'basic-menu' : undefined}
+      aria-haspopup="true"
+      aria-expanded={open ? 'true' : undefined}
+      onClick={(event) => handleClick(row,event,setValidation)}
+    >
+    select Validations
+    </Button>
     <FormControl
-      sx={{ m: 3,height: '10vh',overflowY: 'scroll',backgroundColor: 'white',borderRadius: '1em' }}
+      sx={{ m: 3 }}
       component="fieldset"
       variant="standard"
       error={!!validationErrors.validations}
     >
+    <Menu
+    id="basic-menu"
+    anchorEl={anchorEl}
+    open={open}
+    onClose={handleClose}
+    MenuListProps={{
+      'aria-labelledby': 'basic-button',
+    }}
+    >
       <FormGroup>
+        <MenuItem>
         <FormControlLabel
           control={
             <Checkbox
@@ -110,6 +139,8 @@ export const ExampleTable = ({ data, setData }) => {
           }
           label="Requried"
         />
+        </MenuItem>
+        <MenuItem>
         <FormControlLabel
           control={
             <Checkbox
@@ -125,6 +156,8 @@ export const ExampleTable = ({ data, setData }) => {
           }
           label="Email"
         />
+        </MenuItem>
+        <MenuItem>
         <FormControlLabel
           control={
             <Checkbox
@@ -140,6 +173,8 @@ export const ExampleTable = ({ data, setData }) => {
           }
           label="AlphaNumeric"
         />
+        </MenuItem>
+        <MenuItem>
         <FormControlLabel
           control={
             <Checkbox
@@ -155,11 +190,12 @@ export const ExampleTable = ({ data, setData }) => {
           }
           label="Only Numeric"
         />
+        </MenuItem>
       </FormGroup>
-      <FormHelperText>{validationErrors.validations}</FormHelperText>
+    </Menu>
+    <FormHelperText>{validationErrors.validations}</FormHelperText>
     </FormControl>
-    </Dialog>
-    </>
+    </> 
   )};
 
   const handleCreateField = ({ values, table }) => {
@@ -179,8 +215,7 @@ export const ExampleTable = ({ data, setData }) => {
       setValidationErrors(newValidationErrors);
       return;
     }
-    setValidationErrors({});
-    setCreateValue([]);
+    onClickingCancel(setCreateValue,setCreateValidation);
     setData((prevData) => [
       ...prevData,
       {
@@ -192,7 +227,6 @@ export const ExampleTable = ({ data, setData }) => {
   };
 
   const handleUpdateField = ({ values, table }) => {
-    console.log("the edit",values);
     const validationList = [];
     for (const x in editValidation) {
       if (editValidation[x]) {
@@ -209,7 +243,7 @@ export const ExampleTable = ({ data, setData }) => {
       setValidationErrors(newValidationErrors);
       return;
     }
-    setValidationErrors({});
+    onClickingCancel(setEditValue,setEditValidation);
     setData((prevData) =>
       prevData.map((eachData) => {
         return eachData.id === values.id ? user : eachData;
@@ -375,7 +409,7 @@ export const ExampleTable = ({ data, setData }) => {
 };
 
 const validateUser = (user) => {
-  console.log(user);
+
   const obj = {};
   if (user.name == "") {
     obj["name"] = "Name can' be defined";
@@ -389,9 +423,12 @@ const validateUser = (user) => {
   if (user.type == TEXTFIELD && user.values.length > 0) {
     obj["values"] = "No values in case of textfield";
   }
+  if(user.type == DROPDOWN && user.validations.includes(EMAIL)){
+    obj["validations"] = "Email should not be selected for dropdown"
+  }
   if (
     user.validations.includes(NUMERIC) &&
-    user.validations.includes(NUMERIC)
+    user.validations.includes(ALPHANUMERIC)
   ) {
     obj["validations"] = "Numeric and Alphanumeric can't be checked";
   }
