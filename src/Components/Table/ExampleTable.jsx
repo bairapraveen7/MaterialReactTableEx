@@ -2,6 +2,7 @@ import {
   Box,
   Button,
   Checkbox,
+  Dialog,
   FormControl,
   FormControlLabel,
   FormGroup,
@@ -13,7 +14,7 @@ import {
   MaterialReactTable,
   useMaterialReactTable,
 } from "material-react-table";
-import React, { useContext, useMemo, useState } from "react";
+import React, { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import {
   ALPHANUMERIC,
   DROPDOWN,
@@ -47,6 +48,15 @@ export const ExampleTable = ({ data, setData }) => {
     [ALPHANUMERIC]: false,
   });
   const [validationErrors, setValidationErrors] = useState({});
+  const [open, setOpen] = useState(false);
+
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
 
   const onClickingCancel = (setValue,setValidation) => (
     setValidationErrors({}),
@@ -60,9 +70,6 @@ export const ExampleTable = ({ data, setData }) => {
   );
 
   const dropDownValuesComponent = (row,value,setValue) => {
-    if(row.id == 'row-mrt-edit'){
-      setValue(row.original.values);
-    }
     return (
     <FormControl error={!!validationErrors.values}>
       <TagsInput
@@ -76,15 +83,13 @@ export const ExampleTable = ({ data, setData }) => {
   };
 
   const validationComponent = (row,validation,setValidation) => {
-    if(row.id == 'row-mrt-edit'){
-      setValidation(prev => ({
-        ...prev,
-        ...row.original.validations
-      }))
-    }
     return (
+      <><Button variant="outlined" onClick={handleClickOpen}>click</Button>
+      <Dialog open={open}
+      onClose={handleClose}>
+        
     <FormControl
-      sx={{ m: 3 }}
+      sx={{ m: 3,height: '10vh',overflowY: 'scroll',backgroundColor: 'white',borderRadius: '1em' }}
       component="fieldset"
       variant="standard"
       error={!!validationErrors.validations}
@@ -153,6 +158,8 @@ export const ExampleTable = ({ data, setData }) => {
       </FormGroup>
       <FormHelperText>{validationErrors.validations}</FormHelperText>
     </FormControl>
+    </Dialog>
+    </>
   )};
 
   const handleCreateField = ({ values, table }) => {
@@ -294,7 +301,7 @@ export const ExampleTable = ({ data, setData }) => {
         return (
           <>
             {row.id == "mrt-row-create"
-              ?  validationComponent(createValidation,setCreateValidation) : validationComponent(editValidation,setEditValidation)}
+              ?  validationComponent(row,createValidation,setCreateValidation) : validationComponent(row,editValidation,setEditValidation)}
           </>
         );
       },
