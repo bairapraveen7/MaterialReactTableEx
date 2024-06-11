@@ -29,7 +29,7 @@ import {
 import { TagsInput } from "react-tag-input-component";
 import { DisplayContext, TableContext } from "../../Hooks/Contexts";
 import { v4 as uuidv4 } from "uuid";
-import { Delete, Edit } from "@mui/icons-material";
+import { ArrowDropDown, Delete, Edit } from "@mui/icons-material";
 const typeOfFieldOptions = [TEXTFIELD, DROPDOWN];
 
 export const ExampleTable = ({ data, setData }) => {
@@ -97,13 +97,14 @@ export const ExampleTable = ({ data, setData }) => {
 
   const validationComponent = (row,validation,setValidation) => {
     return (
-    <> 
+    <Box display="flex" > 
     <Button
       id="basic-button"
       aria-controls={open ? 'basic-menu' : undefined}
       aria-haspopup="true"
       aria-expanded={open ? 'true' : undefined}
       onClick={(event) => handleClick(row,event,setValidation)}
+      endIcon={<ArrowDropDown />}
     >
     select Validations
     </Button>
@@ -195,7 +196,7 @@ export const ExampleTable = ({ data, setData }) => {
     </Menu>
     <FormHelperText>{validationErrors.validations}</FormHelperText>
     </FormControl>
-    </> 
+    </Box> 
   )};
 
   const handleCreateField = ({ values, table }) => {
